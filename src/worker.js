@@ -14,7 +14,19 @@ const SYSTEM_PROMPT = `あなたは「ロールプレイ旅行ガイド」です
 - 落ち着いた、しかし茶目っ気のある文体で
 - 一回の返答は2〜4段落程度`;
 
-export async function onRequestPost({ request, env }) {
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/api/chat" && request.method === "POST") {
+      return handleChat(request, env);
+    }
+
+    return env.ASSETS.fetch(request);
+  },
+};
+
+async function handleChat(request, env) {
   if (!env.GEMINI_API_KEY) {
     return new Response("GEMINI_API_KEY is not configured", { status: 500 });
   }
@@ -37,7 +49,7 @@ export async function onRequestPost({ request, env }) {
   }));
 
   const model = "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
 
   const payload = {
     systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
@@ -48,7 +60,7 @@ export async function onRequestPost({ request, env }) {
     },
   };
 
-  const geminiRes = await fetch(url, {
+  const geminiRes = await fetch(geminiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
