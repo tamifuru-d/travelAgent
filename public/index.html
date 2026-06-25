@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>travelAgent — ロールプレイ旅行ガイド</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<main>
+  <header>
+    <h1>travelAgent</h1>
+    <p class="tagline">行き先を、世界観として旅する。</p>
+  </header>
+
+  <section id="chat" aria-live="polite"></section>
+
+  <form id="input-form" autocomplete="off">
+    <textarea id="input" rows="2" placeholder="行き先や、今の気分を入力…" required></textarea>
+    <button type="submit" id="send">送る</button>
+  </form>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
