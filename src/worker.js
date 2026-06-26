@@ -84,7 +84,8 @@ async function handleChat(request, env) {
     contents,
     generationConfig: {
       temperature: 0.9,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 2048,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   };
 
