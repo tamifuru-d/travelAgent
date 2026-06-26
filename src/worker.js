@@ -133,10 +133,27 @@ async function handleChat(request, env) {
   }
 
   const data = await geminiRes.json();
-  const reply =
+  const rawReply =
     data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? "";
+  const reply = stripMarkdown(rawReply);
 
   return new Response(JSON.stringify({ reply }), {
     headers: { "Content-Type": "application/json" },
   });
+}
+
+function stripMarkdown(text) {
+  if (!text) return text;
+  let s = text;
+  s = s.replace(/\*\*(.+?)\*\*/g, "$1");
+  s = s.replace(/__(.+?)__/g, "$1");
+  s = s.replace(/(?<![*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![*\w])/g, "$1");
+  s = s.replace(/(?<![_\w])_(?!\s)([^_\n]+?)(?<!\s)_(?![_\w])/g, "$1");
+  s = s.replace(/^\s*[\*\-•・]\s+/gm, "");
+  s = s.replace(/^\s*\d+\.\s+/gm, "");
+  s = s.replace(/^\s*#{1,6}\s+/gm, "");
+  s = s.replace(/^\s*>\s?/gm, "");
+  s = s.replace(/`([^`]+)`/g, "$1");
+  s = s.replace(/\n{3,}/g, "\n\n");
+  return s.trim();
 }
