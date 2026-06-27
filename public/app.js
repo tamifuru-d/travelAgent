@@ -4,6 +4,7 @@ const input = document.getElementById("input");
 const sendBtn = document.getElementById("send");
 
 const odeEl = document.getElementById("ode-content");
+const odeUpdateBtn = document.getElementById("ode-update");
 const odeNewBtn = document.getElementById("ode-new");
 const odeOpenBtn = document.getElementById("ode-open");
 const odeSaveMdBtn = document.getElementById("ode-save-md");
@@ -160,6 +161,11 @@ odeSaveTxtBtn.addEventListener("click", () => {
 });
 
 async function updateOde() {
+  if (history.length === 0) {
+    setOdeStatus("会話がまだありません", true);
+    return;
+  }
+  odeUpdateBtn.disabled = true;
   setOdeStatus("オードを更新中…");
   try {
     const res = await fetch("/api/ode", {
@@ -183,8 +189,12 @@ async function updateOde() {
     }
   } catch (err) {
     setOdeStatus(`更新失敗: ${err.message}`, true);
+  } finally {
+    odeUpdateBtn.disabled = false;
   }
 }
+
+odeUpdateBtn.addEventListener("click", updateOde);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -218,7 +228,6 @@ form.addEventListener("submit", async (e) => {
     addBubble("bot", reply);
     history.push({ role: "model", text: reply });
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    updateOde();
   } catch (err) {
     console.error(err);
     thinking.remove();
