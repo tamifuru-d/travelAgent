@@ -1,12 +1,13 @@
 :root {
-  --bg: #f7f4ee;
-  --fg: #1f1d1a;
-  --muted: #6b665e;
-  --accent: #2c5f7c;
-  --bubble-user: #2c5f7c;
+  --bg: #F8F6E9;
+  --fg: #2a201a;
+  --muted: #8a7a6a;
+  --main: #705040;
+  --accent: #3C669D;
+  --bubble-user: #705040;
   --bubble-bot: #ffffff;
-  --border: #d9d3c7;
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+  --border: #d9c8b6;
+  font-family: "Hiragino Mincho ProN", "YuMincho", "Yu Mincho", "Noto Serif JP", "Times New Roman", serif;
 }
 
 * { box-sizing: border-box; }
@@ -31,19 +32,40 @@ main {
 
 header {
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sappho-portrait {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 25%;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.6rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 1.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--main);
+  font-family: "Hiragino Mincho ProN", "YuMincho", "Yu Mincho", "Noto Serif JP", "Times New Roman", serif;
 }
 
 .tagline {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: var(--muted);
   font-size: 0.9rem;
+  letter-spacing: 0.05em;
 }
 
 #chat {
@@ -76,6 +98,7 @@ header h1 {
   background: var(--bubble-bot);
   border: 1px solid var(--border);
   border-bottom-left-radius: 4px;
+  color: var(--fg);
 }
 
 .bubble.thinking {
@@ -165,6 +188,12 @@ header h1 {
 .ode-actions button:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.ode-header h2 {
+  color: var(--main);
+  font-family: "Hiragino Mincho ProN", "YuMincho", "Yu Mincho", "Noto Serif JP", "Times New Roman", serif;
+  letter-spacing: 0.06em;
 }
 
 #ode-content {
