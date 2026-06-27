@@ -81,6 +81,10 @@ export default {
       return handleChat(request, env);
     }
 
+    if (url.pathname === "/api/ode" && request.method === "POST") {
+      return handleOde(request, env);
+    }
+
     return env.ASSETS.fetch(request);
   },
 };
@@ -138,6 +142,102 @@ async function handleChat(request, env) {
   const reply = stripMarkdown(rawReply);
 
   return new Response(JSON.stringify({ reply }), {
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+const ODE_PROMPT = `あなたは旅の議事録「Ode（オード）」を編集します。古代ギリシャの女性詩人サッフォーの断片詩集に倣い、Fragment #1, #2, #3... と番号を振った短い断片の連なりとして、旅の輪郭を記録します。
+
+ルール:
+
+各 Fragment は1〜3文。決定事項、確定した情報（予約、時間、場所）、論点、未決事項、ナラティブの核となる気づき、引き出された惑星（こだわり）などを淡々と記録する。詩的に飾らない。事実関係を優先する。固有名詞や時間情報は正確に。冗長な記述や雑談・挨拶は記録しない。既存の Fragment と矛盾する新情報が出たら、既存を更新する。番号は順番に振り直さず、追加された順を保つ。何も新規記録するものがなければ、既存のオードをそのまま返す。
+
+出力はオード本体のみ。前置き、説明、お詫び、コメントは絶対に書かない。
+
+オードでは Markdown を使ってよい（オードは記録用ファイルなので可読性を優先）。
+- 見出し（#）でタイトル、（##）で Fragment 番号
+- 太字（**）で重要語
+
+オードの基本構造（最初のターンで新規作成するときの雛形）：
+
+# Ode #1 — [旅のテーマ／ナラティブを一行で]
+
+日付: [YYYY-MM-DD]
+行き先: [もし定まっていれば、なければ「未定」]
+
+## Fragment #1
+[最初の断片]
+
+## Fragment #2
+[次の断片]
+
+...
+
+タイトル（# Ode #N — ...）の N は、既存オードに番号があれば踏襲、なければ #1 から開始。`;
+
+async function handleOde(request, env) {
+  if (!env.GEMINI_API_KEY) {
+    return new Response("GEMINI_API_KEY is not configured", { status: 500 });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  const currentOde = String(body.ode ?? "").trim();
+  const history = Array.isArray(body.history) ? body.history : [];
+  if (history.length === 0) {
+    return new Response(JSON.stringify({ ode: currentOde }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const recent = history.slice(-6);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const userTurn = `今日の日付: ${today}
+
+現在のオード:
+${currentOde || "（まだ空です。最初のFragmentからタイトル付きで起こしてください。）"}
+
+直近のやりとり:
+${recent.map((m) => `[${m.role === "model" ? "ガイド" : "旅人"}] ${m.text}`).join("\n\n")}
+
+このやりとりを踏まえて、オードを更新してください。更新後のオード本体のみを返してください。`;
+
+  const model = "gemini-2.5-flash";
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+
+  const payload = {
+    systemInstruction: { parts: [{ text: ODE_PROMPT }] },
+    contents: [{ role: "user", parts: [{ text: userTurn }] }],
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 2048,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  };
+
+  const geminiRes = await fetch(geminiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!geminiRes.ok) {
+    const errText = await geminiRes.text();
+    return new Response(`Gemini API error: ${errText}`, { status: 502 });
+  }
+
+  const data = await geminiRes.json();
+  const ode = (
+    data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? ""
+  ).trim();
+
+  return new Response(JSON.stringify({ ode }), {
     headers: { "Content-Type": "application/json" },
   });
 }

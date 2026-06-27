@@ -19,6 +19,21 @@
     <textarea id="input" rows="2" placeholder="行き先や、今の気分を入力…" required></textarea>
     <button type="submit" id="send">送る</button>
   </form>
+
+  <aside id="ode-panel" aria-label="Ode（議事録）">
+    <div class="ode-header">
+      <h2>Ode</h2>
+      <div class="ode-actions">
+        <button type="button" id="ode-new" title="新規オード">新規</button>
+        <button type="button" id="ode-open" title="ファイルを開く">開く</button>
+        <button type="button" id="ode-save-md" title="ダウンロード(.md)">.md</button>
+        <button type="button" id="ode-save-txt" title="ダウンロード(.txt)">.txt</button>
+      </div>
+    </div>
+    <textarea id="ode-content" spellcheck="false" placeholder="この旅のオード（議事）がここに記録されていきます。"></textarea>
+    <p class="ode-status" id="ode-status" aria-live="polite"></p>
+    <input type="file" id="ode-file-input" accept=".md,.txt,text/markdown,text/plain" hidden>
+  </aside>
 </main>
 <script src="/app.js"></script>
 </body>
