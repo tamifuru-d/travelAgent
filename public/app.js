@@ -25,6 +25,22 @@ function addBubble(role, text, opts = {}) {
   return div;
 }
 
+function friendlyError(status, body) {
+  const text = String(body || "");
+  if (text.includes("RESOURCE_EXHAUSTED") || text.includes("429") || status === 429) {
+    const m = text.match(/retry in ([\d.]+)s/i);
+    const wait = m ? `（およそ${Math.ceil(parseFloat(m[1]))}秒）` : "";
+    return `今、少し混み合っているようです。少しだけ待ってからもう一度お試しいただけますか${wait}。`;
+  }
+  if (status === 401 || status === 403) {
+    return "認証エラーです。管理者にお知らせください。";
+  }
+  if (text.includes("GEMINI_API_KEY")) {
+    return "サーバー側の設定に問題があるようです。少し時間を置いてもう一度お試しください。";
+  }
+  return "うまくいきませんでした。少し時間を置いてからもう一度お試しください。";
+}
+
 function setOdeStatus(text, transient = false) {
   odeStatus.textContent = text;
   if (transient) {
@@ -149,7 +165,8 @@ async function updateOde() {
     });
     if (!res.ok) {
       const err = await res.text();
-      setOdeStatus(`更新失敗: ${err.slice(0, 80)}`, true);
+      console.error("ode update failed:", err);
+      setOdeStatus(friendlyError(res.status, err), true);
       return;
     }
     const data = await res.json();
@@ -187,7 +204,7 @@ form.addEventListener("submit", async (e) => {
 
     if (!res.ok) {
       const err = await res.text();
-      throw new Error(err || `HTTP ${res.status}`);
+      throw new Error(friendlyError(res.status, err));
     }
 
     const data = await res.json();
@@ -199,8 +216,9 @@ form.addEventListener("submit", async (e) => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     updateOde();
   } catch (err) {
+    console.error(err);
     thinking.remove();
-    addBubble("bot", `エラー: ${err.message}`);
+    addBubble("bot", err.message);
   } finally {
     sendBtn.disabled = false;
     input.focus();
