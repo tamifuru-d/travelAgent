@@ -38,7 +38,8 @@ function friendlyError(status, body) {
   if (text.includes("GEMINI_API_KEY")) {
     return "サーバー側の設定に問題があるようです。少し時間を置いてもう一度お試しください。";
   }
-  return "うまくいきませんでした。少し時間を置いてからもう一度お試しください。";
+  const code = status ? ` [HTTP ${status}]` : "";
+  return `うまくいきませんでした。少し時間を置いてからもう一度お試しください。${code}`;
 }
 
 function setOdeStatus(text, transient = false) {
