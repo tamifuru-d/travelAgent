@@ -111,7 +111,7 @@ async function handleChat(request, env) {
     parts: [{ text: String(msg.text ?? "") }],
   }));
 
-  const model = "gemini-2.0-flash";
+  const model = "gemini-2.5-flash-lite";
   const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
 
   const payload = {
@@ -121,6 +121,7 @@ async function handleChat(request, env) {
     generationConfig: {
       temperature: 0.9,
       maxOutputTokens: 2048,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   };
 
@@ -207,7 +208,7 @@ ${recent.map((m) => `[${m.role === "model" ? "ガイド" : "旅人"}] ${m.text}`
 
 このやりとりを踏まえて、オードを更新してください。更新後のオード本体のみを返してください。`;
 
-  const model = "gemini-2.0-flash";
+  const model = "gemini-2.5-flash-lite";
   const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
 
   const payload = {
@@ -216,6 +217,7 @@ ${recent.map((m) => `[${m.role === "model" ? "ガイド" : "旅人"}] ${m.text}`
     generationConfig: {
       temperature: 0.3,
       maxOutputTokens: 2048,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   };
 
